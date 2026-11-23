@@ -1,0 +1,132 @@
+
+.learning-recommendations {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 30px;
+    background: #f8fafc;
+    border-radius: 16px;
+    color: #1e293b;
+    font-family: Arial, sans-serif;
+}
+
+.learning-recommendations h2 {
+    color: #1d4ed8;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.learning-recommendations > p {
+    color: #64748b;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.learning-recommendations button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 13px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.learning-recommendations button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.learning-recommendations button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.recommendations-result {
+    margin-top: 30px;
+    padding: 30px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.recommendations-result h3 {
+    color: #1d4ed8;
+    font-size: 23px;
+    margin-bottom: 20px;
+}
+
+.recommendations-result h1,
+.recommendations-result h2,
+.recommendations-result h3 {
+    color: #1e40af;
+    margin-top: 25px;
+    margin-bottom: 12px;
+}
+
+.recommendations-result ul,
+.recommendations-result ol {
+    padding-left: 28px;
+    margin: 12px 0;
+}
+
+.recommendations-result li {
+    margin-bottom: 9px;
+}
+
+.recommendations-result strong {
+    color: #1e3a8a;
+}
+
+.recommendations-result hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 22px 0;
+}
+
+.recommendations-result table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    display: block;
+    overflow-x: auto;
+}
+
+.recommendations-result th,
+.recommendations-result td {
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    text-align: left;
+}
+
+.recommendations-result th {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+.error-message {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .learning-recommendations {
+        margin: 15px;
+        padding: 18px;
+    }
+
+    .recommendations-result {
+        padding: 18px;
+    }
+
+    .learning-recommendations h2 {
+        font-size: 23px;
+    }
+}

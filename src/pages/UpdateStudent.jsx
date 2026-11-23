@@ -1,8 +1,8 @@
+
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 function UpdateStudent() {
-
     const { rollNumber } = useParams()
     const navigate = useNavigate()
 
@@ -12,27 +12,21 @@ function UpdateStudent() {
         year: '',
         semester: '',
         course: '',
-        totalMarks: ''
+        totalMarks: '',
+        maximumMarks: ''
     })
 
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState(false)
-
     const [error, setError] = useState('')
     const [message, setMessage] = useState('')
 
-
-    // ======================================================
     // FETCH STUDENT
-    // ======================================================
-
     useEffect(() => {
         fetchStudent()
     }, [rollNumber])
 
-
     const fetchStudent = async () => {
-
         const token = localStorage.getItem('token')
 
         if (!token) {
@@ -42,26 +36,18 @@ function UpdateStudent() {
         }
 
         try {
-
-            const response = await fetch(
-                `https://studentmanagementsystem-0xvp.onrender.com/students/${rollNumber}`,
-                {
-                    method: 'GET',
-
-                    headers: {
-                        Authorization: 'Bearer ' + token,
-                        Accept: 'application/json'
-                    }
+            const response = await fetch(`/students/${rollNumber}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json'
                 }
-            )
-
+            })
 
             const text = await response.text()
-
             let data = null
 
             if (text) {
-
                 try {
                     data = JSON.parse(text)
                 } catch {
@@ -69,56 +55,33 @@ function UpdateStudent() {
                 }
             }
 
-
             if (!response.ok) {
-
-                if (typeof data === 'string') {
-                    throw new Error(data)
-                }
-
                 throw new Error(
-                    data?.message ||
-                    `Failed to load student (${response.status})`
+                    typeof data === 'string'
+                        ? data
+                        : data?.message || `Failed to load student (${response.status})`
                 )
             }
 
-
             setFormData({
-                rollNumber: data.rollNumber,
-                name: data.name || '',
-                year: data.year || '',
-                semester: data.semester || '',
-                course: data.course || '',
-                totalMarks: data.totalMarks || ''
+                rollNumber: data.rollNumber ?? '',
+                name: data.name ?? '',
+                year: data.year ?? '',
+                semester: data.semester ?? '',
+                course: data.course ?? '',
+                totalMarks: data.totalMarks ?? '',
+                maximumMarks: data.maximumMarks ?? ''
             })
-
-
         } catch (error) {
-
-            console.error(
-                'Fetch student error:',
-                error
-            )
-
-            setError(
-                error.message ||
-                'Failed to load student.'
-            )
-
+            console.error('Fetch student error:', error)
+            setError(error.message || 'Failed to load student.')
         } finally {
-
             setLoading(false)
-
         }
     }
 
-
-    // ======================================================
     // HANDLE INPUT CHANGE
-    // ======================================================
-
     const handleChange = (event) => {
-
         const { name, value } = event.target
 
         setFormData({
@@ -130,155 +93,82 @@ function UpdateStudent() {
         setMessage('')
     }
 
-
-    // ======================================================
     // HANDLE UPDATE
-    // ======================================================
-
     const handleSubmit = async (event) => {
-
         event.preventDefault()
-
         setError('')
         setMessage('')
-
 
         const token = localStorage.getItem('token')
 
         if (!token) {
-
             setError('Please login first.')
-
             return
         }
-
-
-        // ==========================================
-        // VALIDATION
-        // ==========================================
 
         if (!formData.name.trim()) {
-
-            setError(
-                'Please enter the student name.'
-            )
-
+            setError('Please enter the student name.')
             return
         }
 
-
-        if (!formData.year) {
-
-            setError(
-                'Please enter the year.'
-            )
-
+        if (!formData.year || !formData.semester) {
+            setError('Please enter the year and semester.')
             return
         }
-
-
-        if (!formData.semester) {
-
-            setError(
-                'Please enter the semester.'
-            )
-
-            return
-        }
-
 
         if (!formData.course.trim()) {
-
-            setError(
-                'Please enter the course.'
-            )
-
+            setError('Please enter the course.')
             return
         }
 
-
-        if (!formData.totalMarks &&
-            formData.totalMarks !== 0) {
-
-            setError(
-                'Please enter the total marks.'
-            )
-
+        if (formData.totalMarks === '' || formData.maximumMarks === '') {
+            setError('Please enter both total marks and maximum marks.')
             return
         }
 
+        const totalMarks = Number(formData.totalMarks)
+        const maximumMarks = Number(formData.maximumMarks)
 
-        const totalMarks =
-            Number(formData.totalMarks)
-
-
-        if (totalMarks < 0 || totalMarks > 1000) {
-
-            setError(
-                'Total marks must be between 0 and 1000.'
-            )
-
+        if (!Number.isInteger(totalMarks) || totalMarks < 0) {
+            setError('Total marks must be a non-negative whole number.')
             return
         }
 
+        if (!Number.isInteger(maximumMarks) || maximumMarks <= 0) {
+            setError('Maximum marks must be a positive whole number.')
+            return
+        }
+
+        if (totalMarks > maximumMarks) {
+            setError('Total marks cannot exceed maximum marks.')
+            return
+        }
 
         setUpdating(true)
 
-
         try {
-
-            // ==========================================
-            // PUT REQUEST
-            // ==========================================
-
-            const response = await fetch(
-                `https://studentmanagementsystem-0xvp.onrender.com/students/${rollNumber}`,
-                {
-                    method: 'PUT',
-
-                    headers: {
-                        'Content-Type': 'application/json',
-
-                        Authorization:
-                            'Bearer ' + token,
-
-                        Accept: 'application/json'
-                    },
-
-                    body: JSON.stringify({
-
-                        rollNumber:
-                            Number(formData.rollNumber),
-
-                        name:
-                            formData.name.trim(),
-
-                        year:
-                            Number(formData.year),
-
-                        semester:
-                            Number(formData.semester),
-
-                        course:
-                            formData.course.trim(),
-
-                        totalMarks:
-                        totalMarks
-                    })
-                }
-            )
-
-
-            // ==========================================
-            // READ RESPONSE
-            // ==========================================
+            const response = await fetch(`/students/${rollNumber}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    rollNumber: Number(formData.rollNumber),
+                    name: formData.name.trim(),
+                    year: Number(formData.year),
+                    semester: Number(formData.semester),
+                    course: formData.course.trim(),
+                    totalMarks,
+                    maximumMarks
+                })
+            })
 
             const text = await response.text()
-
             let data = null
 
             if (text) {
-
                 try {
                     data = JSON.parse(text)
                 } catch {
@@ -286,134 +176,58 @@ function UpdateStudent() {
                 }
             }
 
-
-            // ==========================================
-            // HANDLE ERROR
-            // ==========================================
-
             if (!response.ok) {
-
-                if (typeof data === 'string') {
-                    throw new Error(data)
-                }
-
                 throw new Error(
-                    data?.message ||
-                    `Failed to update student (${response.status})`
+                    typeof data === 'string'
+                        ? data
+                        : data?.message || `Failed to update student (${response.status})`
                 )
             }
 
-
-            // ==========================================
-            // SUCCESS
-            // ==========================================
-
-            setMessage(
-                'Student updated successfully!'
-            )
-
-
-            // Wait briefly so user can see success message
+            setMessage('Student updated successfully!')
 
             setTimeout(() => {
                 navigate('/students')
             }, 1000)
-
-
         } catch (error) {
-
-            console.error(
-                'Update student error:',
-                error
-            )
-
-            setError(
-                error.message ||
-                'Failed to update student.'
-            )
-
+            console.error('Update student error:', error)
+            setError(error.message || 'Failed to update student.')
             setUpdating(false)
         }
     }
 
-
-    // ======================================================
-    // BACK BUTTON
-    // ======================================================
-
     const handleBack = () => {
-
         navigate('/students')
     }
 
-
-    // ======================================================
     // LOADING
-    // ======================================================
-
     if (loading) {
-
         return (
-
             <div className="student-form-page">
-
                 <div className="student-form-card">
-
                     <div className="student-form-header">
-
-                        <div className="student-form-icon">
-                            ✏️
-                        </div>
-
-                        <h1>
-                            Update Student
-                        </h1>
-
-                        <p>
-                            Loading student information...
-                        </p>
-
+                        <div className="student-form-icon">✏️</div>
+                        <h1>Update Student</h1>
+                        <p>Loading student information...</p>
                     </div>
-
                 </div>
-
             </div>
         )
     }
 
-
-    // ======================================================
     // ERROR WHILE LOADING
-    // ======================================================
-
     if (error && !formData.rollNumber) {
-
         return (
-
             <div className="student-form-page">
-
                 <div className="student-form-card">
-
                     <div className="student-form-header">
-
-                        <div className="student-form-icon">
-                            ⚠️
-                        </div>
-
-                        <h1>
-                            Update Student
-                        </h1>
-
+                        <div className="student-form-icon">⚠️</div>
+                        <h1>Update Student</h1>
                     </div>
 
-
-                    <div className="form-error">
-                        ❌ {error}
-                    </div>
-
+                    <div className="form-error">❌ {error}</div>
 
                     <div className="form-actions">
-
                         <button
                             type="button"
                             className="back-btn"
@@ -421,99 +235,35 @@ function UpdateStudent() {
                         >
                             ← Back to Students
                         </button>
-
                     </div>
-
                 </div>
-
             </div>
         )
     }
 
-
-    // ======================================================
-    // MAIN JSX
-    // ======================================================
-
+    // MAIN FORM
     return (
-
         <div className="student-form-page">
-
             <div className="student-form-card">
 
-
-                {/* ==========================================
-                    HEADER
-                ========================================== */}
-
                 <div className="student-form-header">
-
-                    <div className="student-form-icon">
-                        ✏️
-                    </div>
-
-                    <h1>
-                        Update Student
-                    </h1>
-
-                    <p>
-                        Update the student's academic
-                        information below.
-                    </p>
-
+                    <div className="student-form-icon">✏️</div>
+                    <h1>Update Student</h1>
+                    <p>Update the student's academic information below.</p>
                 </div>
 
-
-                {/* ==========================================
-                    SUCCESS MESSAGE
-                ========================================== */}
-
                 {message && (
-
-                    <div className="form-success">
-
-                        ✅ {message}
-
-                    </div>
-
+                    <div className="form-success">✅ {message}</div>
                 )}
-
-
-                {/* ==========================================
-                    ERROR MESSAGE
-                ========================================== */}
 
                 {error && (
-
-                    <div className="form-error">
-
-                        ❌ {error}
-
-                    </div>
-
+                    <div className="form-error">❌ {error}</div>
                 )}
 
-
-                {/* ==========================================
-                    FORM
-                ========================================== */}
-
-                <form
-                    className="student-form"
-                    onSubmit={handleSubmit}
-                >
-
-
-                    {/* ======================================
-                        ROLL NUMBER
-                    ====================================== */}
+                <form className="student-form" onSubmit={handleSubmit}>
 
                     <div className="form-field">
-
-                        <label htmlFor="rollNumber">
-                            Roll Number
-                        </label>
-
+                        <label htmlFor="rollNumber">Roll Number</label>
                         <input
                             id="rollNumber"
                             type="number"
@@ -521,24 +271,11 @@ function UpdateStudent() {
                             value={formData.rollNumber}
                             readOnly
                         />
-
-                        <small>
-                            Roll number cannot be changed.
-                        </small>
-
+                        <small>Roll number cannot be changed.</small>
                     </div>
 
-
-                    {/* ======================================
-                        NAME
-                    ====================================== */}
-
                     <div className="form-field">
-
-                        <label htmlFor="name">
-                            Student Name
-                        </label>
-
+                        <label htmlFor="name">Student Name</label>
                         <input
                             id="name"
                             type="text"
@@ -549,20 +286,10 @@ function UpdateStudent() {
                             disabled={updating}
                             required
                         />
-
                     </div>
 
-
-                    {/* ======================================
-                        YEAR
-                    ====================================== */}
-
                     <div className="form-field">
-
-                        <label htmlFor="year">
-                            Year
-                        </label>
-
+                        <label htmlFor="year">Year</label>
                         <input
                             id="year"
                             type="number"
@@ -575,20 +302,10 @@ function UpdateStudent() {
                             max="4"
                             required
                         />
-
                     </div>
 
-
-                    {/* ======================================
-                        SEMESTER
-                    ====================================== */}
-
                     <div className="form-field">
-
-                        <label htmlFor="semester">
-                            Semester
-                        </label>
-
+                        <label htmlFor="semester">Semester</label>
                         <input
                             id="semester"
                             type="number"
@@ -601,20 +318,10 @@ function UpdateStudent() {
                             max="8"
                             required
                         />
-
                     </div>
 
-
-                    {/* ======================================
-                        COURSE
-                    ====================================== */}
-
                     <div className="form-field">
-
-                        <label htmlFor="course">
-                            Course
-                        </label>
-
+                        <label htmlFor="course">Course</label>
                         <input
                             id="course"
                             type="text"
@@ -625,42 +332,39 @@ function UpdateStudent() {
                             disabled={updating}
                             required
                         />
-
                     </div>
 
-
-                    {/* ======================================
-                        TOTAL MARKS
-                    ====================================== */}
-
                     <div className="form-field">
-
-                        <label htmlFor="totalMarks">
-                            Total Marks
-                        </label>
-
+                        <label htmlFor="totalMarks">Total Marks</label>
                         <input
                             id="totalMarks"
                             type="number"
                             name="totalMarks"
-                            placeholder="Enter marks out of 1000"
+                            placeholder="Enter obtained marks"
                             value={formData.totalMarks}
                             onChange={handleChange}
                             disabled={updating}
                             min="0"
-                            max="1000"
                             required
                         />
-
                     </div>
 
-
-                    {/* ======================================
-                        ACTION BUTTONS
-                    ====================================== */}
+                    <div className="form-field">
+                        <label htmlFor="maximumMarks">Maximum Marks</label>
+                        <input
+                            id="maximumMarks"
+                            type="number"
+                            name="maximumMarks"
+                            placeholder="Example: 1000"
+                            value={formData.maximumMarks}
+                            onChange={handleChange}
+                            disabled={updating}
+                            min="1"
+                            required
+                        />
+                    </div>
 
                     <div className="form-actions">
-
                         <button
                             type="button"
                             className="back-btn"
@@ -670,25 +374,17 @@ function UpdateStudent() {
                             ← Back to Students
                         </button>
 
-
                         <button
                             type="submit"
                             className="submit-student-btn"
                             disabled={updating}
                         >
-
-                            {updating
-                                ? 'Updating Student...'
-                                : 'Update Student'}
-
+                            {updating ? 'Updating Student...' : 'Update Student'}
                         </button>
-
                     </div>
 
                 </form>
-
             </div>
-
         </div>
     )
 }

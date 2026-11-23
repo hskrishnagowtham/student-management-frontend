@@ -1,351 +1,239 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Register() {
+    const navigate = useNavigate();
 
-    const navigate = useNavigate()
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+        name: '',
+        year: '',
+        semester: '',
+        course: ''
+    });
 
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-    const [role, setRole] = useState('USER')
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
-
-    const [loading, setLoading] = useState(false)
-
+    const handleChange = (event) => {
+        setFormData({
+            ...formData,
+            [event.target.name]: event.target.value
+        });
+    };
 
     const handleRegister = async (event) => {
+        event.preventDefault();
 
-        event.preventDefault()
+        setError('');
+        setSuccess('');
 
-        setError('')
-        setSuccess('')
-
-
-        // ==========================================
-        // VALIDATION
-        // ==========================================
-
-        if (!username.trim()) {
-
-            setError(
-                'Please enter a username.'
-            )
-
-            return
+        if (
+            !formData.username.trim() ||
+            !formData.password ||
+            !formData.name.trim() ||
+            !formData.year ||
+            !formData.semester ||
+            !formData.course.trim()
+        ) {
+            setError('Please fill in all fields.');
+            return;
         }
 
-
-        if (username.trim().length < 3) {
-
-            setError(
-                'Username must contain at least 3 characters.'
-            )
-
-            return
+        if (formData.username.trim().length < 3) {
+            setError('Username must contain at least 3 characters.');
+            return;
         }
 
-
-        if (!password) {
-
-            setError(
-                'Please enter a password.'
-            )
-
-            return
+        if (formData.password.length < 6) {
+            setError('Password must contain at least 6 characters.');
+            return;
         }
 
-
-        if (password.length < 6) {
-
-            setError(
-                'Password must contain at least 6 characters.'
-            )
-
-            return
-        }
-
-
-        setLoading(true)
-
+        setLoading(true);
 
         try {
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    username: formData.username.trim(),
+                    password: formData.password,
+                    name: formData.name.trim(),
+                    year: Number(formData.year),
+                    semester: Number(formData.semester),
+                    course: formData.course.trim()
+                })
+            });
 
-            const response = await fetch(
-                'https://studentmanagementsystem-0xvp.onrender.com/auth/register',
-                {
-                    method: 'POST',
-
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json'
-                    },
-
-                    body: JSON.stringify({
-                        username: username.trim(),
-                        password: password,
-                        role: role
-                    })
-                }
-            )
-
-
-            const text = await response.text()
-
-            let data = null
-
-
-            if (text) {
-
-                try {
-
-                    data = JSON.parse(text)
-
-                } catch {
-
-                    data = text
-
-                }
-            }
-
+            const text = await response.text();
 
             if (!response.ok) {
-
-                if (typeof data === 'string') {
-
-                    throw new Error(data)
-
-                }
-
                 throw new Error(
-                    data?.message ||
-                    `Registration failed (${response.status})`
-                )
+                    text || `Registration failed (${response.status})`
+                );
             }
-
-
-            // ==========================================
-            // SUCCESS
-            // ==========================================
 
             setSuccess(
                 'Registration successful! Redirecting to login...'
-            )
+            );
 
-
-            setUsername('')
-            setPassword('')
-
-
-            // ==========================================
-            // GO TO LOGIN
-            // ==========================================
+            setFormData({
+                username: '',
+                password: '',
+                name: '',
+                year: '',
+                semester: '',
+                course: ''
+            });
 
             setTimeout(() => {
-
-                navigate('/login')
-
-            }, 1500)
-
+                navigate('/login');
+            }, 1500);
 
         } catch (error) {
-
-            console.error(
-                'Registration error:',
-                error
-            )
-
+            console.error('Registration error:', error);
             setError(
-                error.message ||
-                'Registration failed. Please try again.'
-            )
-
+                error.message || 'Registration failed. Please try again.'
+            );
         } finally {
-
-            setLoading(false)
-
+            setLoading(false);
         }
-    }
-
+    };
 
     return (
-
         <div className="auth-page">
-
-
             <div className="auth-card">
 
-
-                {/* ==================================
-                    HEADER
-                ================================== */}
-
                 <div className="auth-header">
-
-                    <div className="auth-icon">
-                        👤
-                    </div>
-
-                    <h1>
-                        Create Account
-                    </h1>
-
-                    <p>
-                        Register for the Student Management System
-                    </p>
-
+                    <div className="auth-icon">👤</div>
+                    <h1>Create Account</h1>
+                    <p>Register for the Student Management System</p>
                 </div>
 
-
-                {/* ==================================
-                    ERROR
-                ================================== */}
-
                 {error && (
-
-                    <div className="auth-error">
-                        {error}
-                    </div>
-
+                    <div className="auth-error">{error}</div>
                 )}
-
-
-                {/* ==================================
-                    SUCCESS
-                ================================== */}
 
                 {success && (
-
-                    <div className="auth-success">
-                        {success}
-                    </div>
-
+                    <div className="auth-success">{success}</div>
                 )}
-
-
-                {/* ==================================
-                    FORM
-                ================================== */}
 
                 <form onSubmit={handleRegister}>
 
-
-                    {/* USERNAME */}
-
                     <div className="form-group">
-
-                        <label htmlFor="register-username">
-                            Username
-                        </label>
-
+                        <label htmlFor="username">Username</label>
                         <input
-                            id="register-username"
+                            id="username"
+                            name="username"
                             type="text"
                             placeholder="Create a username"
-                            value={username}
-                            onChange={(event) =>
-                                setUsername(event.target.value)
-                            }
+                            value={formData.username}
+                            onChange={handleChange}
                             autoComplete="username"
                             disabled={loading}
                         />
-
                     </div>
 
-
-                    {/* PASSWORD */}
-
                     <div className="form-group">
-
-                        <label htmlFor="register-password">
-                            Password
-                        </label>
-
+                        <label htmlFor="password">Password</label>
                         <input
-                            id="register-password"
+                            id="password"
+                            name="password"
                             type="password"
                             placeholder="Create a password"
-                            value={password}
-                            onChange={(event) =>
-                                setPassword(event.target.value)
-                            }
+                            value={formData.password}
+                            onChange={handleChange}
                             autoComplete="new-password"
                             disabled={loading}
                         />
-
                     </div>
-
-
-                    {/* ROLE */}
 
                     <div className="form-group">
-
-                        <label htmlFor="role">
-                            Role
-                        </label>
-
-                        <select
-                            id="role"
-                            value={role}
-                            onChange={(event) =>
-                                setRole(event.target.value)
-                            }
+                        <label htmlFor="name">Full Name</label>
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            placeholder="Enter your full name"
+                            value={formData.name}
+                            onChange={handleChange}
                             disabled={loading}
-                        >
-
-                            <option value="USER">
-                                User
-                            </option>
-
-                            <option value="ADMIN">
-                                Admin
-                            </option>
-
-                        </select>
-
+                        />
                     </div>
 
+                    <div className="form-group">
+                        <label htmlFor="year">Year</label>
+                        <select
+                            id="year"
+                            name="year"
+                            value={formData.year}
+                            onChange={handleChange}
+                            disabled={loading}
+                        >
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
 
-                    {/* REGISTER BUTTON */}
+                    <div className="form-group">
+                        <label htmlFor="semester">Semester</label>
+                        <select
+                            id="semester"
+                            name="semester"
+                            value={formData.semester}
+                            onChange={handleChange}
+                            disabled={loading}
+                        >
+                            <option value="">Select Semester</option>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                                <option key={sem} value={sem}>
+                                    Semester {sem}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="course">Course</label>
+                        <input
+                            id="course"
+                            name="course"
+                            type="text"
+                            placeholder="Example: CSE"
+                            value={formData.course}
+                            onChange={handleChange}
+                            disabled={loading}
+                        />
+                    </div>
 
                     <button
                         type="submit"
                         className="auth-submit-btn"
                         disabled={loading}
                     >
-
-                        {loading
-                            ? 'Creating Account...'
-                            : 'Create Account'}
-
+                        {loading ? 'Creating Account...' : 'Create Account'}
                     </button>
-
 
                 </form>
 
-
-                {/* ==================================
-                    LOGIN LINK
-                ================================== */}
-
                 <div className="auth-footer">
-
-                    <p>
-                        Already have an account?
-                    </p>
-
-                    <Link to="/login">
-                        Login here
-                    </Link>
-
+                    <p>Already have an account?</p>
+                    <Link to="/login">Login here</Link>
                 </div>
 
-
             </div>
-
         </div>
-    )
+    );
 }
 
-export default Register
+export default Register;

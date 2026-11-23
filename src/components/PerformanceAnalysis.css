@@ -1,0 +1,105 @@
+
+.performance-analysis {
+    max-width: 1000px;
+    margin: 35px auto;
+    padding: 30px;
+    background: #f8fafc;
+    border-radius: 16px;
+    color: #1e293b;
+    font-family: Arial, sans-serif;
+}
+
+.performance-analysis h2 {
+    color: #1d4ed8;
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.performance-analysis > p {
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.performance-analysis button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 13px 25px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.performance-analysis button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.performance-analysis button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.analysis-result {
+    margin-top: 30px;
+    padding: 28px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.analysis-result h3 {
+    color: #1d4ed8;
+    font-size: 23px;
+    margin-bottom: 18px;
+}
+
+.analysis-result h1,
+.analysis-result h2 {
+    color: #1e40af;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+.analysis-result ul,
+.analysis-result ol {
+    padding-left: 26px;
+}
+
+.analysis-result li {
+    margin-bottom: 9px;
+}
+
+.analysis-result strong {
+    color: #1e3a8a;
+}
+
+.analysis-result pre {
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .performance-analysis {
+        margin: 15px;
+        padding: 18px;
+    }
+
+    .performance-analysis h2 {
+        font-size: 23px;
+    }
+
+    .analysis-result {
+        padding: 18px;
+    }
+}

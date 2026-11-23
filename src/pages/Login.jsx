@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -11,82 +12,57 @@ function Login() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
-
     const handleLogin = async (event) => {
 
         event.preventDefault()
 
         setError('')
 
-
-        // ==========================================
         // VALIDATION
-        // ==========================================
-
         if (!username.trim()) {
-
             setError('Please enter your username.')
-
             return
         }
-
 
         if (!password) {
-
             setError('Please enter your password.')
-
             return
         }
-
 
         setLoading(true)
 
-
         try {
 
-            const response = await fetch(
-                'https://studentmanagementsystem-0xvp.onrender.com/auth/login',
-                {
-                    method: 'POST',
+            const response = await fetch('/auth/login', {
+                method: 'POST',
 
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json'
-                    },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
 
-                    body: JSON.stringify({
-                        username: username.trim(),
-                        password: password
-                    })
-                }
-            )
-
+                body: JSON.stringify({
+                    username: username.trim(),
+                    password: password
+                })
+            })
 
             const text = await response.text()
 
             let data = null
 
-
             if (text) {
-
                 try {
-
                     data = JSON.parse(text)
-
                 } catch {
-
                     data = text
-
                 }
             }
-
 
             if (!response.ok) {
 
                 if (typeof data === 'string') {
-
                     throw new Error(data)
-
                 }
 
                 throw new Error(
@@ -95,38 +71,35 @@ function Login() {
                 )
             }
 
-
-            // ==========================================
-            // SAVE JWT TOKEN
-            // ==========================================
-
+            // CHECK JWT TOKEN
             if (!data?.token) {
-
                 throw new Error(
                     'Login successful, but no token was received.'
                 )
             }
 
+            // CHECK USER ROLE
+            if (!data?.role) {
+                throw new Error(
+                    'Login successful, but no user role was received.'
+                )
+            }
 
-            localStorage.setItem(
-                'token',
-                data.token
-            )
+            // SAVE JWT TOKEN
+            localStorage.setItem('token', data.token)
 
+            // SAVE USER ROLE
+            localStorage.setItem('role', data.role)
 
-            // ==========================================
+            // SAVE USERNAME
+            localStorage.setItem('username', data.username)
+
             // GO TO DASHBOARD
-            // ==========================================
-
             navigate('/dashboard')
-
 
         } catch (error) {
 
-            console.error(
-                'Login error:',
-                error
-            )
+            console.error('Login error:', error)
 
             setError(
                 error.message ||
@@ -140,19 +113,13 @@ function Login() {
         }
     }
 
-
     return (
 
         <div className="auth-page">
 
-
             <div className="auth-card">
 
-
-                {/* ==================================
-                    HEADER
-                ================================== */}
-
+                {/* HEADER */}
                 <div className="auth-header">
 
                     <div className="auth-icon">
@@ -169,29 +136,17 @@ function Login() {
 
                 </div>
 
-
-                {/* ==================================
-                    ERROR
-                ================================== */}
-
+                {/* ERROR */}
                 {error && (
-
                     <div className="auth-error">
                         {error}
                     </div>
-
                 )}
 
-
-                {/* ==================================
-                    FORM
-                ================================== */}
-
+                {/* FORM */}
                 <form onSubmit={handleLogin}>
 
-
                     {/* USERNAME */}
-
                     <div className="form-group">
 
                         <label htmlFor="username">
@@ -212,9 +167,7 @@ function Login() {
 
                     </div>
 
-
                     {/* PASSWORD */}
-
                     <div className="form-group">
 
                         <label htmlFor="password">
@@ -235,9 +188,7 @@ function Login() {
 
                     </div>
 
-
                     {/* LOGIN BUTTON */}
-
                     <button
                         type="submit"
                         className="auth-submit-btn"
@@ -250,14 +201,9 @@ function Login() {
 
                     </button>
 
-
                 </form>
 
-
-                {/* ==================================
-                    REGISTER LINK
-                ================================== */}
-
+                {/* REGISTER LINK */}
                 <div className="auth-footer">
 
                     <p>
@@ -269,7 +215,6 @@ function Login() {
                     </Link>
 
                 </div>
-
 
             </div>
 

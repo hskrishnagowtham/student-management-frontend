@@ -1,0 +1,119 @@
+
+.ai-assistant {
+    max-width: 1000px;
+    margin: 35px auto;
+    padding: 30px;
+    background: #f8fafc;
+    border-radius: 16px;
+    color: #1e293b;
+    font-family: Arial, sans-serif;
+}
+
+.ai-assistant h2 {
+    color: #1d4ed8;
+    font-size: 28px;
+    margin-bottom: 22px;
+}
+
+.ai-assistant textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    resize: vertical;
+    outline: none;
+    background: white;
+}
+
+.ai-assistant textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ai-assistant button {
+    margin: 12px 10px 0 0;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.ai-assistant button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.ai-assistant button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ai-answer {
+    margin-top: 30px;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.ai-answer h3 {
+    color: #1d4ed8;
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.ai-answer h1,
+.ai-answer h2,
+.ai-answer h3 {
+    color: #1e40af;
+    margin-top: 20px;
+}
+
+.ai-answer ul,
+.ai-answer ol {
+    padding-left: 25px;
+}
+
+.ai-answer li {
+    margin-bottom: 8px;
+}
+
+.ai-answer pre {
+    padding: 15px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.ai-answer code {
+    background: #eff6ff;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .ai-assistant {
+        margin: 15px;
+        padding: 18px;
+    }
+
+    .ai-assistant h2 {
+        font-size: 23px;
+    }
+
+    .ai-answer {
+        padding: 18px;
+    }
+}

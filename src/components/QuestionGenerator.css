@@ -1,0 +1,130 @@
+
+.question-generator {
+    max-width: 1000px;
+    margin: 35px auto;
+    padding: 30px;
+    background: #f8fafc;
+    border-radius: 16px;
+    color: #1e293b;
+    font-family: Arial, sans-serif;
+}
+
+.question-generator h2 {
+    color: #1d4ed8;
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.question-generator > p {
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.question-generator input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font-size: 16px;
+    outline: none;
+    background: white;
+}
+
+.question-generator input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.question-generator button {
+    margin: 5px 10px 5px 0;
+    padding: 13px 23px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.question-generator button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.question-generator button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.question-generator .error-message {
+    margin-top: 15px;
+    padding: 13px;
+    color: #dc2626;
+    background: #fef2f2;
+    border-radius: 8px;
+}
+
+.generated-questions {
+    margin-top: 30px;
+    padding: 28px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.generated-questions h3 {
+    color: #1d4ed8;
+    font-size: 23px;
+    margin-bottom: 18px;
+}
+
+.generated-questions h1,
+.generated-questions h2 {
+    color: #1e40af;
+    margin-top: 22px;
+}
+
+.generated-questions ul,
+.generated-questions ol {
+    padding-left: 28px;
+}
+
+.generated-questions li {
+    margin-bottom: 10px;
+}
+
+.generated-questions strong {
+    color: #1e3a8a;
+}
+
+.generated-questions pre {
+    padding: 15px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .question-generator {
+        margin: 15px;
+        padding: 18px;
+    }
+
+    .question-generator h2 {
+        font-size: 23px;
+    }
+
+    .generated-questions {
+        padding: 18px;
+    }
+}

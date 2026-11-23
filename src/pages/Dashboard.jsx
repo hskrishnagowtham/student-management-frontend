@@ -1,549 +1,313 @@
-import { useEffect, useState } from 'react'
+
+import { useEffect, useState } from "react";
 
 function Dashboard() {
+    const [student, setStudent] = useState(null);
+    const [students, setStudents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    // ==========================================
-    // STATE
-    // ==========================================
-
-    const [students, setStudents] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-
-
-    // ==========================================
-    // FETCH STUDENTS
-    // ==========================================
+    const role = localStorage.getItem("role");
+    const isAdmin = role === "ADMIN";
 
     useEffect(() => {
-        fetchStudents()
-    }, [])
+        const fetchDashboard = async () => {
+            const token = localStorage.getItem("token");
 
+            if (!token) {
+                setError("Please login first.");
+                setLoading(false);
+                return;
+            }
 
-    const fetchStudents = async () => {
+            try {
+                // ADMIN DASHBOARD
+                if (isAdmin) {
+                    const response = await fetch("/students", {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/json"
+                        }
+                    });
 
-        const token = localStorage.getItem('token')
+                    const data = await response.json();
 
-        if (!token) {
-            setError('Please login first.')
-            setLoading(false)
-            return
-        }
-
-        try {
-
-            const response = await fetch(
-                'https://studentmanagementsystem-0xvp.onrender.com/students',
-                {
-                    method: 'GET',
-
-                    headers: {
-                        Authorization: 'Bearer ' + token,
-                        Accept: 'application/json'
+                    if (!response.ok) {
+                        throw new Error(
+                            data.message || "Failed to load students."
+                        );
                     }
-                }
-            )
 
-
-            // ==================================
-            // READ RESPONSE
-            // ==================================
-
-            const text = await response.text()
-
-            let data = null
-
-
-            if (text) {
-
-                try {
-                    data = JSON.parse(text)
-                } catch {
-                    data = text
+                    setStudents(Array.isArray(data) ? data : []);
                 }
 
-            }
+                // USER DASHBOARD
+                else {
+                    const response = await fetch("/students/my-profile", {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/json"
+                        }
+                    });
 
+                    const data = await response.json();
 
-            // ==================================
-            // HANDLE ERROR
-            // ==================================
+                    if (!response.ok) {
+                        throw new Error(
+                            data.message || "Failed to load your profile."
+                        );
+                    }
 
-            if (!response.ok) {
-
-                if (typeof data === 'string') {
-                    throw new Error(data)
+                    setStudent(data);
                 }
 
-                throw new Error(
-                    data?.message ||
-                    `Failed to load students (${response.status})`
-                )
+            } catch (err) {
+                console.error("Dashboard error:", err);
+                setError(err.message || "Failed to load dashboard.");
+            } finally {
+                setLoading(false);
             }
+        };
 
+        fetchDashboard();
+    }, [isAdmin]);
 
-            // ==================================
-            // SET STUDENTS
-            // ==================================
-
-            if (Array.isArray(data)) {
-                setStudents(data)
-            } else {
-                setStudents([])
-            }
-
-        } catch (error) {
-
-            console.error(
-                'Dashboard error:',
-                error
-            )
-
-            setError(error.message)
-
-        } finally {
-
-            setLoading(false)
-
-        }
-    }
-
-
-    // ==========================================
-    // STATISTICS
-    // ==========================================
-
-    // Total students
-
-    const totalStudents = students.length
-
-
-    // Total courses
-
-    const totalCourses = new Set(
-        students.map(student => student.course)
-    ).size
-
-
-    // Average percentage
-
-    const averagePercentage =
-        totalStudents > 0
-
-            ? students.reduce(
-            (sum, student) =>
-                sum + Number(student.percentage || 0),
-            0
-        ) / totalStudents
-
-            : 0
-
-
-    // Top student
-
-    const topStudent =
-        totalStudents > 0
-
-            ? students.reduce(
-                (top, student) =>
-
-                    Number(student.percentage || 0) >
-                    Number(top.percentage || 0)
-
-                        ? student
-                        : top
-            )
-
-            : null
-
-
-    // ==========================================
-    // GRADE COUNTS
-    // ==========================================
-
-    const gradeCounts = {
-
-        'A+': 0,
-
-        'A': 0,
-
-        'B': 0,
-
-        'C': 0,
-
-        'D': 0,
-
-        'F': 0
-    }
-
-
-    students.forEach(student => {
-
-        const grade = student.grade
-
-        if (gradeCounts[grade] !== undefined) {
-
-            gradeCounts[grade]++
-
-        }
-
-    })
-
-
-    // ==========================================
-    // LOADING
-    // ==========================================
-
+    // Loading
     if (loading) {
+        return (
+            <div className="dashboard-page">
+                <h1>Dashboard</h1>
+                <p>Loading dashboard...</p>
+            </div>
+        );
+    }
+
+    // Error
+    if (error) {
+        return (
+            <div className="dashboard-page">
+                <h1>Dashboard</h1>
+
+                <div className="error-message">
+                    <p>{error}</p>
+
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem("token");
+                            localStorage.removeItem("role");
+                            window.location.href = "/login";
+                        }}
+                    >
+                        Login Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // ADMIN DASHBOARD
+    if (isAdmin) {
+        const totalStudents = students.length;
+
+        const averagePercentage =
+            totalStudents > 0
+                ? students.reduce(
+                (sum, student) =>
+                    sum + Number(student.percentage || 0),
+                0
+            ) / totalStudents
+                : 0;
+
+        const gradeAStudents = students.filter(
+            student =>
+                student.grade === "A" ||
+                student.grade === "A+"
+        ).length;
+
+        const failedStudents = students.filter(
+            student => student.grade === "F"
+        ).length;
 
         return (
-
             <div className="dashboard-page">
 
-                <h1>
-                    Dashboard
-                </h1>
+                <h1>Admin Dashboard</h1>
 
-                <p>
-                    Loading dashboard...
+                <p className="dashboard-subtitle">
+                    Welcome, Administrator! Here's an overview
+                    of student performance.
                 </p>
+
+                <div className="dashboard-cards">
+
+                    <div className="dashboard-card">
+                        <div className="dashboard-icon">🎓</div>
+                        <div>
+                            <h3>Total Students</h3>
+                            <p>{totalStudents}</p>
+                        </div>
+                    </div>
+
+                    <div className="dashboard-card">
+                        <div className="dashboard-icon">📊</div>
+                        <div>
+                            <h3>Average Percentage</h3>
+                            <p>{averagePercentage.toFixed(2)}%</p>
+                        </div>
+                    </div>
+
+                    <div className="dashboard-card">
+                        <div className="dashboard-icon">🏆</div>
+                        <div>
+                            <h3>A/A+ Students</h3>
+                            <p>{gradeAStudents}</p>
+                        </div>
+                    </div>
+
+                    <div className="dashboard-card">
+                        <div className="dashboard-icon">⚠️</div>
+                        <div>
+                            <h3>Failed Students</h3>
+                            <p>{failedStudents}</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div className="grade-section">
+                    <h2>Student Overview</h2>
+
+                    <div className="dashboard-summary">
+                        <p>
+                            <strong>Total Students:</strong>
+                            {" "}{totalStudents}
+                        </p>
+
+                        <p>
+                            <strong>Average Percentage:</strong>
+                            {" "}{averagePercentage.toFixed(2)}%
+                        </p>
+
+                        <p>
+                            <strong>Students with A/A+:</strong>
+                            {" "}{gradeAStudents}
+                        </p>
+
+                        <p>
+                            <strong>Failed Students:</strong>
+                            {" "}{failedStudents}
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        );
+    }
+
+    // USER DASHBOARD
+    if (!student) {
+        return (
+            <div className="dashboard-page">
+                <h1>Dashboard</h1>
+                <p>Student profile not found.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="dashboard-page">
+
+            <h1>My Dashboard</h1>
+
+            <p className="dashboard-subtitle">
+                Welcome, {student.name}! Here is your academic overview.
+            </p>
+
+            <div className="dashboard-cards">
+
+                <div className="dashboard-card">
+                    <div className="dashboard-icon">🎓</div>
+                    <div>
+                        <h3>Roll Number</h3>
+                        <p>{student.rollNumber}</p>
+                    </div>
+                </div>
+
+                <div className="dashboard-card">
+                    <div className="dashboard-icon">📚</div>
+                    <div>
+                        <h3>Course</h3>
+                        <p>{student.course}</p>
+                    </div>
+                </div>
+
+                <div className="dashboard-card">
+                    <div className="dashboard-icon">📈</div>
+                    <div>
+                        <h3>Percentage</h3>
+                        <p>
+                            {Number(student.percentage || 0).toFixed(2)}%
+                        </p>
+                    </div>
+                </div>
+
+                <div className="dashboard-card">
+                    <div className="dashboard-icon">🏆</div>
+                    <div>
+                        <h3>Grade</h3>
+                        <p>{student.grade}</p>
+                    </div>
+                </div>
 
             </div>
 
-        )
-    }
+            <div className="grade-section">
 
+                <h2>My Academic Details</h2>
 
-    // ==========================================
-    // DASHBOARD PAGE
-    // ==========================================
+                <div className="dashboard-summary">
 
-    return (
+                    <p>
+                        <strong>Name:</strong> {student.name}
+                    </p>
 
-        <div className="dashboard-page">
+                    <p>
+                        <strong>Roll Number:</strong> {student.rollNumber}
+                    </p>
 
+                    <p>
+                        <strong>Year:</strong> {student.year}
+                    </p>
 
-            {/* ==================================
-                TITLE
-            ================================== */}
+                    <p>
+                        <strong>Semester:</strong> {student.semester}
+                    </p>
 
-            <h1>
-                Dashboard
-            </h1>
+                    <p>
+                        <strong>Course:</strong> {student.course}
+                    </p>
 
+                    <p>
+                        <strong>Total Marks:</strong> {student.totalMarks}
+                    </p>
 
-            <p className="dashboard-subtitle">
+                    <p>
+                        <strong>Percentage:</strong>
+                        {" "}{Number(student.percentage || 0).toFixed(2)}%
+                    </p>
 
-                Overview of student performance
-                and statistics
+                    <p>
+                        <strong>Grade:</strong> {student.grade}
+                    </p>
 
-            </p>
+                </div>
 
-
-            {/* ==================================
-                ERROR
-            ================================== */}
-
-            {error && (
-
-                <p className="error-message">
-
-                    {error}
-
-                </p>
-
-            )}
-
-
-            {!error && (
-
-                <>
-
-
-                    {/* ==================================
-                        STATISTICS CARDS
-                    ================================== */}
-
-                    <div className="dashboard-cards">
-
-
-                        {/* TOTAL STUDENTS */}
-
-                        <div className="dashboard-card">
-
-                            <div className="dashboard-icon">
-                                👨‍🎓
-                            </div>
-
-                            <div>
-
-                                <h3>
-                                    Total Students
-                                </h3>
-
-                                <p>
-                                    {totalStudents}
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* TOTAL COURSES */}
-
-                        <div className="dashboard-card">
-
-                            <div className="dashboard-icon">
-                                📚
-                            </div>
-
-                            <div>
-
-                                <h3>
-                                    Total Courses
-                                </h3>
-
-                                <p>
-                                    {totalCourses}
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* AVERAGE PERCENTAGE */}
-
-                        <div className="dashboard-card">
-
-                            <div className="dashboard-icon">
-                                📈
-                            </div>
-
-                            <div>
-
-                                <h3>
-                                    Average Percentage
-                                </h3>
-
-                                <p>
-                                    {averagePercentage.toFixed(2)}%
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* TOP STUDENT */}
-
-                        <div className="dashboard-card">
-
-                            <div className="dashboard-icon">
-                                🏆
-                            </div>
-
-                            <div>
-
-                                <h3>
-                                    Top Student
-                                </h3>
-
-
-                                <p>
-
-                                    {topStudent
-                                        ? topStudent.name
-                                        : 'N/A'}
-
-                                </p>
-
-
-                                {topStudent && (
-
-                                    <small>
-
-                                        {Number(
-                                            topStudent.percentage
-                                        ).toFixed(2)}%
-
-                                    </small>
-
-                                )}
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* ==================================
-                        GRADE DISTRIBUTION
-                    ================================== */}
-
-                    <div className="grade-section">
-
-                        <h2>
-                            Grade Distribution
-                        </h2>
-
-
-                        <div className="grade-cards">
-
-
-                            {/* A+ */}
-
-                            <div className="grade-card">
-
-                                <h3>
-                                    A+
-                                </h3>
-
-                                <p>
-                                    {gradeCounts['A+']}
-                                </p>
-
-                            </div>
-
-
-                            {/* A */}
-
-                            <div className="grade-card">
-
-                                <h3>
-                                    A
-                                </h3>
-
-                                <p>
-                                    {gradeCounts['A']}
-                                </p>
-
-                            </div>
-
-
-                            {/* B */}
-
-                            <div className="grade-card">
-
-                                <h3>
-                                    B
-                                </h3>
-
-                                <p>
-                                    {gradeCounts['B']}
-                                </p>
-
-                            </div>
-
-
-                            {/* C */}
-
-                            <div className="grade-card">
-
-                                <h3>
-                                    C
-                                </h3>
-
-                                <p>
-                                    {gradeCounts['C']}
-                                </p>
-
-                            </div>
-
-
-                            {/* D */}
-
-                            <div className="grade-card">
-
-                                <h3>
-                                    D
-                                </h3>
-
-                                <p>
-                                    {gradeCounts['D']}
-                                </p>
-
-                            </div>
-
-
-                            {/* F */}
-
-                            <div className="grade-card">
-
-                                <h3>
-                                    F
-                                </h3>
-
-                                <p>
-                                    {gradeCounts['F']}
-                                </p>
-
-                            </div>
-
-
-                        </div>
-
-                    </div>
-
-
-                    {/* ==================================
-                        STUDENT SUMMARY
-                    ================================== */}
-
-                    <div className="dashboard-summary">
-
-                        <h2>
-                            Student Summary
-                        </h2>
-
-
-                        <p>
-                            Currently managing{' '}
-                            <strong>
-                                {totalStudents}
-                            </strong>{' '}
-                            students across{' '}
-                            <strong>
-                                {totalCourses}
-                            </strong>{' '}
-                            courses.
-                        </p>
-
-
-                        {topStudent && (
-
-                            <p>
-
-                                Highest performing student:{' '}
-
-                                <strong>
-                                    {topStudent.name}
-                                </strong>
-
-                                {' '}with{' '}
-
-                                <strong>
-                                    {Number(
-                                        topStudent.percentage
-                                    ).toFixed(2)}%
-                                </strong>
-
-                            </p>
-
-                        )}
-
-                    </div>
-
-
-                </>
-
-            )}
+            </div>
 
         </div>
-
-    )
+    );
 }
 
-export default Dashboard
+export default Dashboard;

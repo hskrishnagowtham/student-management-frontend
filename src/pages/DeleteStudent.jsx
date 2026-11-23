@@ -45,7 +45,7 @@ function DeleteStudent() {
         try {
 
             const response = await fetch(
-                `https://studentmanagementsystem-0xvp.onrender.com/students/${rollNumber}`,
+                `/students/${rollNumber}`,
                 {
                     method: 'GET',
 
@@ -136,7 +136,7 @@ function DeleteStudent() {
         try {
 
             const response = await fetch(
-                `https://studentmanagementsystem-0xvp.onrender.com/students/${rollNumber}`,
+                `/students/${rollNumber}`,
                 {
                     method: 'DELETE',
 
