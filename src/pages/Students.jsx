@@ -17,7 +17,7 @@ function Students() {
         fetchStudents();
     }, []);
 
-    // Fetch students
+    // Fetch students based on role
     const fetchStudents = async (isRefresh = false) => {
         const token = localStorage.getItem("token");
 
@@ -36,7 +36,12 @@ function Students() {
         setError("");
 
         try {
-            const response = await fetch("/students", {
+            // ADMIN gets all students; USER gets only their own profile
+            const endpoint = isAdmin
+                ? "/students"
+                : "/students/my-profile";
+
+            const response = await fetch(endpoint, {
                 method: "GET",
                 headers: {
                     Authorization: "Bearer " + token,
@@ -60,15 +65,20 @@ function Students() {
                     typeof data === "string"
                         ? data
                         : data?.message ||
-                        `Failed to load students (${response.status})`
+                        `Failed to load student details (${response.status})`
                 );
             }
 
-            setStudents(Array.isArray(data) ? data : []);
+            // ADMIN receives an array; USER receives one student object
+            if (isAdmin) {
+                setStudents(Array.isArray(data) ? data : []);
+            } else {
+                setStudents(data ? [data] : []);
+            }
 
         } catch (error) {
             console.error("Fetch students error:", error);
-            setError(error.message || "Failed to load students.");
+            setError(error.message || "Failed to load student details.");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -93,8 +103,8 @@ function Students() {
             <div className="students-page">
                 <div className="page-loading">
                     <div className="loading-spinner">⏳</div>
-                    <h2>Loading Students...</h2>
-                    <p>Please wait while we fetch student records.</p>
+                    <h2>Loading Student Details...</h2>
+                    <p>Please wait while we fetch your records.</p>
                 </div>
             </div>
         );
@@ -106,9 +116,14 @@ function Students() {
             {/* Page Header */}
             <div className="students-header">
                 <div>
-                    <h1>Students</h1>
+                    <h1>
+                        {isAdmin ? "Students" : "My Academic Profile"}
+                    </h1>
+
                     <p className="students-subtitle">
-                        Manage and view all student records
+                        {isAdmin
+                            ? "Manage and view all student records"
+                            : "View your academic details and performance"}
                     </p>
                 </div>
 
@@ -153,7 +168,10 @@ function Students() {
                 <div className="students-info-bar">
 
                     <div>
-                        <span className="info-label">Total Students</span>
+                        <span className="info-label">
+                            {isAdmin ? "Total Students" : "My Record"}
+                        </span>
+
                         <strong className="info-value">
                             {students.length}
                         </strong>
@@ -161,6 +179,7 @@ function Students() {
 
                     <div>
                         <span className="info-label">Showing</span>
+
                         <strong className="info-value">
                             {filteredStudents.length}
                         </strong>
@@ -169,7 +188,7 @@ function Students() {
                     <div className="students-search">
                         <input
                             type="text"
-                            placeholder="Search students..."
+                            placeholder="Search student details..."
                             value={searchTerm}
                             onChange={(event) =>
                                 setSearchTerm(event.target.value)
@@ -194,8 +213,18 @@ function Students() {
             {!error && students.length === 0 && (
                 <div className="empty-state">
                     <div className="empty-icon">👨‍🎓</div>
-                    <h2>No Students Found</h2>
-                    <p>There are currently no students in the system.</p>
+
+                    <h2>
+                        {isAdmin
+                            ? "No Students Found"
+                            : "Academic Profile Not Found"}
+                    </h2>
+
+                    <p>
+                        {isAdmin
+                            ? "There are currently no students in the system."
+                            : "Your academic profile is not available."}
+                    </p>
 
                     {isAdmin && (
                         <Link to="/students/add">
@@ -297,10 +326,11 @@ function Students() {
                 filteredStudents.length === 0 && (
                     <div className="empty-state">
                         <div className="empty-icon">🔍</div>
+
                         <h2>No Matching Students</h2>
 
                         <p>
-                            No students match your search for
+                            No records match your search for
                             <strong> "{searchTerm}"</strong>
                         </p>
 

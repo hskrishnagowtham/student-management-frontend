@@ -3,22 +3,17 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 function Login() {
-
     const navigate = useNavigate()
 
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
     const handleLogin = async (event) => {
-
         event.preventDefault()
-
         setError('')
 
-        // VALIDATION
         if (!username.trim()) {
             setError('Please enter your username.')
             return
@@ -32,23 +27,20 @@ function Login() {
         setLoading(true)
 
         try {
-
-            const response = await fetch('https://studentmanagementsystem-0xvp.onrender.com/auth/login', {
+            // Send login request to the local backend through Vite proxy
+            const response = await fetch('/auth/login', {
                 method: 'POST',
-
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/json'
                 },
-
                 body: JSON.stringify({
                     username: username.trim(),
-                    password: password
+                    password
                 })
             })
 
             const text = await response.text()
-
             let data = null
 
             if (text) {
@@ -59,100 +51,71 @@ function Login() {
                 }
             }
 
+            // Debug information without exposing the JWT token
+            console.log('LOGIN DETAILS:', {
+                httpStatus: response.status,
+                message: data?.message,
+                username: data?.username,
+                role: data?.role,
+                tokenReceived: !!data?.token,
+                responseType: typeof data
+            })
+
             if (!response.ok) {
-
-                if (typeof data === 'string') {
-                    throw new Error(data)
-                }
-
                 throw new Error(
-                    data?.message ||
-                    'Invalid username or password.'
+                    typeof data === 'string'
+                        ? data
+                        : data?.message || 'Invalid username or password.'
                 )
             }
 
-            // CHECK JWT TOKEN
             if (!data?.token) {
                 throw new Error(
                     'Login successful, but no token was received.'
                 )
             }
 
-            // CHECK USER ROLE
             if (!data?.role) {
                 throw new Error(
                     'Login successful, but no user role was received.'
                 )
             }
 
-            // SAVE JWT TOKEN
+            // Save login details
             localStorage.setItem('token', data.token)
-
-            // SAVE USER ROLE
             localStorage.setItem('role', data.role)
-
-            // SAVE USERNAME
             localStorage.setItem('username', data.username)
 
-            // GO TO DASHBOARD
+            // Navigate to dashboard
             navigate('/dashboard')
 
         } catch (error) {
-
             console.error('Login error:', error)
-
-            setError(
-                error.message ||
-                'Login failed. Please try again.'
-            )
-
+            setError(error.message || 'Login failed. Please try again.')
         } finally {
-
             setLoading(false)
-
         }
     }
 
     return (
-
         <div className="auth-page">
-
             <div className="auth-card">
 
-                {/* HEADER */}
                 <div className="auth-header">
-
-                    <div className="auth-icon">
-                        🔐
-                    </div>
-
-                    <h1>
-                        Welcome Back
-                    </h1>
-
-                    <p>
-                        Login to your Student Management System
-                    </p>
-
+                    <div className="auth-icon">🔐</div>
+                    <h1>Welcome Back</h1>
+                    <p>Login to your Student Management System</p>
                 </div>
 
-                {/* ERROR */}
                 {error && (
                     <div className="auth-error">
                         {error}
                     </div>
                 )}
 
-                {/* FORM */}
                 <form onSubmit={handleLogin}>
-
-                    {/* USERNAME */}
                     <div className="form-group">
-
-                        <label htmlFor="username">
-                            Username
-                        </label>
-
+                        <label htmlFor="username">Username</label>
                         <input
                             id="username"
                             type="text"
@@ -164,16 +127,10 @@ function Login() {
                             autoComplete="username"
                             disabled={loading}
                         />
-
                     </div>
 
-                    {/* PASSWORD */}
                     <div className="form-group">
-
-                        <label htmlFor="password">
-                            Password
-                        </label>
-
+                        <label htmlFor="password">Password</label>
                         <input
                             id="password"
                             type="password"
@@ -185,39 +142,23 @@ function Login() {
                             autoComplete="current-password"
                             disabled={loading}
                         />
-
                     </div>
 
-                    {/* LOGIN BUTTON */}
                     <button
                         type="submit"
                         className="auth-submit-btn"
                         disabled={loading}
                     >
-
-                        {loading
-                            ? 'Logging in...'
-                            : 'Login'}
-
+                        {loading ? 'Logging in...' : 'Login'}
                     </button>
-
                 </form>
 
-                {/* REGISTER LINK */}
                 <div className="auth-footer">
-
-                    <p>
-                        Don't have an account?
-                    </p>
-
-                    <Link to="/register">
-                        Create an account
-                    </Link>
-
+                    <p>Don't have an account?</p>
+                    <Link to="/register">Create an account</Link>
                 </div>
 
             </div>
-
         </div>
     )
 }

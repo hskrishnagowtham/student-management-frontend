@@ -48,29 +48,32 @@ function Register() {
             return;
         }
 
-        if (formData.password.length < 6) {
-            setError('Password must contain at least 6 characters.');
+        if (formData.password.length < 8) {
+            setError('Password must contain at least 8 characters.');
             return;
         }
 
         setLoading(true);
 
         try {
-            const response = await fetch('/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    username: formData.username.trim(),
-                    password: formData.password,
-                    name: formData.name.trim(),
-                    year: Number(formData.year),
-                    semester: Number(formData.semester),
-                    course: formData.course.trim()
-                })
-            });
+            const response = await fetch(
+                'https://studentmanagementsystem-0xvp.onrender.com/auth/register',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: formData.username.trim(),
+                        password: formData.password,
+                        name: formData.name.trim(),
+                        year: Number(formData.year),
+                        semester: Number(formData.semester),
+                        course: formData.course.trim()
+                    })
+                }
+            );
 
             const text = await response.text();
 
@@ -99,6 +102,7 @@ function Register() {
 
         } catch (error) {
             console.error('Registration error:', error);
+
             setError(
                 error.message || 'Registration failed. Please try again.'
             );
