@@ -38,8 +38,8 @@ function Students() {
         try {
             // ADMIN gets all students; USER gets only their own profile
             const endpoint = isAdmin
-                ? "/students"
-                : "/students/my-profile";
+                ? "https://studentmanagementsystem-0xvp.onrender.com/students"
+                : "https://studentmanagementsystem-0xvp.onrender.com/students/my-profile";
 
             const response = await fetch(endpoint, {
                 method: "GET",
