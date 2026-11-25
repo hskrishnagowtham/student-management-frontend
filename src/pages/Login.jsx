@@ -28,7 +28,9 @@ function Login() {
 
         try {
             // Send login request to the local backend through Vite proxy
-            const response = await fetch('/auth/login', {
+            const response = await fetch(
+                'https://studentmanagementsystem-0xvp.onrender.com/auth/login',
+                {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
