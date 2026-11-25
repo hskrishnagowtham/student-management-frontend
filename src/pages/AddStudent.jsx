@@ -1,9 +1,9 @@
 
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function AddStudent() {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         rollNumber: '',
@@ -13,112 +13,115 @@ function AddStudent() {
         course: '',
         totalMarks: '',
         maximumMarks: ''
-    })
+    });
 
-    const [message, setMessage] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     // HANDLE INPUT CHANGE
     const handleChange = (event) => {
-        const { name, value } = event.target
+        const { name, value } = event.target;
 
         setFormData({
             ...formData,
             [name]: value
-        })
+        });
 
-        setError('')
-        setMessage('')
-    }
+        setError('');
+        setMessage('');
+    };
 
     // HANDLE SUBMIT
     const handleSubmit = async (event) => {
-        event.preventDefault()
+        event.preventDefault();
 
-        setMessage('')
-        setError('')
+        setMessage('');
+        setError('');
 
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('token');
 
         if (!token) {
-            setError('Please login first.')
-            return
+            setError('Please login first.');
+            return;
         }
 
         // VALIDATION
         if (!formData.rollNumber) {
-            setError('Please enter the roll number.')
-            return
+            setError('Please enter the roll number.');
+            return;
         }
 
         if (!formData.name.trim()) {
-            setError('Please enter the student name.')
-            return
+            setError('Please enter the student name.');
+            return;
         }
 
         if (!formData.year || !formData.semester) {
-            setError('Please enter the year and semester.')
-            return
+            setError('Please enter the year and semester.');
+            return;
         }
 
         if (!formData.course.trim()) {
-            setError('Please enter the course.')
-            return
+            setError('Please enter the course.');
+            return;
         }
 
         if (formData.totalMarks === '' || formData.maximumMarks === '') {
-            setError('Please enter both total marks and maximum marks.')
-            return
+            setError('Please enter both total marks and maximum marks.');
+            return;
         }
 
-        const totalMarks = Number(formData.totalMarks)
-        const maximumMarks = Number(formData.maximumMarks)
+        const totalMarks = Number(formData.totalMarks);
+        const maximumMarks = Number(formData.maximumMarks);
 
         if (!Number.isInteger(totalMarks) || totalMarks < 0) {
-            setError('Total marks must be a non-negative whole number.')
-            return
+            setError('Total marks must be a non-negative whole number.');
+            return;
         }
 
         if (!Number.isInteger(maximumMarks) || maximumMarks <= 0) {
-            setError('Maximum marks must be a positive whole number.')
-            return
+            setError('Maximum marks must be a positive whole number.');
+            return;
         }
 
         if (totalMarks > maximumMarks) {
-            setError('Total marks cannot exceed maximum marks.')
-            return
+            setError('Total marks cannot exceed maximum marks.');
+            return;
         }
 
-        setLoading(true)
+        setLoading(true);
 
         try {
-            const response = await fetch('/students', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    rollNumber: Number(formData.rollNumber),
-                    name: formData.name.trim(),
-                    year: Number(formData.year),
-                    semester: Number(formData.semester),
-                    course: formData.course.trim(),
-                    totalMarks,
-                    maximumMarks
-                })
-            })
+            const response = await fetch(
+                'https://studentmanagementsystem-0xvp.onrender.com/students',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rollNumber: Number(formData.rollNumber),
+                        name: formData.name.trim(),
+                        year: Number(formData.year),
+                        semester: Number(formData.semester),
+                        course: formData.course.trim(),
+                        totalMarks,
+                        maximumMarks
+                    })
+                }
+            );
 
-            const text = await response.text()
-            let data = null
+            const text = await response.text();
+            let data = null;
 
             if (text) {
                 try {
-                    data = JSON.parse(text)
+                    data = JSON.parse(text);
                 } catch {
-                    data = text
+                    data = text;
                 }
             }
 
@@ -126,11 +129,19 @@ function AddStudent() {
                 throw new Error(
                     typeof data === 'string'
                         ? data
-                        : data?.message || `Failed to add student (${response.status})`
-                )
+                        : data?.message ||
+                        `Failed to add student (${response.status})`
+                );
             }
 
-            setMessage('Student added successfully!')
+            // Prevent HTML or unexpected responses from showing false success
+            if (typeof data === 'string') {
+                throw new Error(
+                    'Unexpected response from backend. Student was not confirmed as saved.'
+                );
+            }
+
+            setMessage('Student added successfully!');
 
             setFormData({
                 rollNumber: '',
@@ -140,22 +151,21 @@ function AddStudent() {
                 course: '',
                 totalMarks: '',
                 maximumMarks: ''
-            })
+            });
 
         } catch (error) {
-            console.error('Add student error:', error)
-            setError(error.message || 'Failed to add student.')
+            console.error('Add student error:', error);
+            setError(error.message || 'Failed to add student.');
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     // BACK TO STUDENTS
     const handleBack = () => {
-        navigate('/students')
-    }
+        navigate('/students');
+    };
 
-    // JSX
     return (
         <div className="student-form-page">
             <div className="student-form-card">
@@ -312,7 +322,7 @@ function AddStudent() {
                 </form>
             </div>
         </div>
-    )
+    );
 }
 
-export default AddStudent
+export default AddStudent;
