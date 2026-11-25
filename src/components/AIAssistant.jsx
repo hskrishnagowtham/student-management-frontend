@@ -2,8 +2,9 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
 import "./AIAssistant.css";
+
+const API_URL = "https://studentmanagementsystem-0xvp.onrender.com";
 
 function AIAssistant() {
     const [question, setQuestion] = useState("");
@@ -21,18 +22,31 @@ function AIAssistant() {
             return;
         }
 
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            setAnswer("Your session may have expired. Please log in again.");
+            return;
+        }
+
         setLoading(true);
         setAnswer("");
 
         try {
-            const response = await fetch("/ai/student-assistant", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify({ prompt: question })
-            });
+            const response = await fetch(
+                `${API_URL}/ai/student-assistant`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "text/plain"
+                    },
+                    body: JSON.stringify({
+                        prompt: question.trim()
+                    })
+                }
+            );
 
             if (!response.ok) {
                 const errorMessage = await response.text();
@@ -55,14 +69,24 @@ function AIAssistant() {
                     );
                 }
 
-                throw new Error(errorMessage || "Failed to get AI response.");
+                throw new Error(
+                    errorMessage || `Failed to get AI response (${response.status}).`
+                );
             }
 
             const data = await response.text();
+
+            if (!data.trim()) {
+                throw new Error("AI returned an empty response. Please try again.");
+            }
+
             setAnswer(data);
 
         } catch (error) {
-            setAnswer(error.message || "Something went wrong. Please try again.");
+            console.error("AI Assistant error:", error);
+            setAnswer(
+                error.message || "Something went wrong. Please try again."
+            );
         } finally {
             setLoading(false);
         }
@@ -77,6 +101,7 @@ function AIAssistant() {
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Ask your academic question..."
                 rows="4"
+                disabled={loading}
             />
 
             <br />
