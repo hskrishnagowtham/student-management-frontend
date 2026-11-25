@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+const API_URL = 'https://studentmanagementsystem-0xvp.onrender.com'
+
 function UpdateStudent() {
     const { rollNumber } = useParams()
     const navigate = useNavigate()
@@ -23,71 +25,78 @@ function UpdateStudent() {
 
     // FETCH STUDENT
     useEffect(() => {
+        const fetchStudent = async () => {
+            const token = localStorage.getItem('token')
+
+            if (!token) {
+                setError('Please login first.')
+                setLoading(false)
+                return
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/students/${encodeURIComponent(rollNumber)}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Authorization: 'Bearer ' + token,
+                            Accept: 'application/json'
+                        }
+                    }
+                )
+
+                const text = await response.text()
+                let data = null
+
+                if (text) {
+                    try {
+                        data = JSON.parse(text)
+                    } catch {
+                        data = text
+                    }
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        typeof data === 'string'
+                            ? data
+                            : data?.message || `Failed to load student (${response.status})`
+                    )
+                }
+
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Invalid response received from backend.')
+                }
+
+                setFormData({
+                    rollNumber: data.rollNumber ?? '',
+                    name: data.name ?? '',
+                    year: data.year ?? '',
+                    semester: data.semester ?? '',
+                    course: data.course ?? '',
+                    totalMarks: data.totalMarks ?? '',
+                    maximumMarks: data.maximumMarks ?? ''
+                })
+            } catch (error) {
+                console.error('Fetch student error:', error)
+                setError(error.message || 'Failed to load student.')
+            } finally {
+                setLoading(false)
+            }
+        }
+
         fetchStudent()
     }, [rollNumber])
-
-    const fetchStudent = async () => {
-        const token = localStorage.getItem('token')
-
-        if (!token) {
-            setError('Please login first.')
-            setLoading(false)
-            return
-        }
-
-        try {
-            const response = await fetch(`/students/${rollNumber}`, {
-                method: 'GET',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    Accept: 'application/json'
-                }
-            })
-
-            const text = await response.text()
-            let data = null
-
-            if (text) {
-                try {
-                    data = JSON.parse(text)
-                } catch {
-                    data = text
-                }
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    typeof data === 'string'
-                        ? data
-                        : data?.message || `Failed to load student (${response.status})`
-                )
-            }
-
-            setFormData({
-                rollNumber: data.rollNumber ?? '',
-                name: data.name ?? '',
-                year: data.year ?? '',
-                semester: data.semester ?? '',
-                course: data.course ?? '',
-                totalMarks: data.totalMarks ?? '',
-                maximumMarks: data.maximumMarks ?? ''
-            })
-        } catch (error) {
-            console.error('Fetch student error:', error)
-            setError(error.message || 'Failed to load student.')
-        } finally {
-            setLoading(false)
-        }
-    }
 
     // HANDLE INPUT CHANGE
     const handleChange = (event) => {
         const { name, value } = event.target
 
-        setFormData({
-            ...formData,
+        setFormData(prev => ({
+            ...prev,
             [name]: value
-        })
+        }))
 
         setError('')
         setMessage('')
@@ -147,23 +156,26 @@ function UpdateStudent() {
         setUpdating(true)
 
         try {
-            const response = await fetch(`/students/${rollNumber}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + token,
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    rollNumber: Number(formData.rollNumber),
-                    name: formData.name.trim(),
-                    year: Number(formData.year),
-                    semester: Number(formData.semester),
-                    course: formData.course.trim(),
-                    totalMarks,
-                    maximumMarks
-                })
-            })
+            const response = await fetch(
+                `${API_URL}/students/${encodeURIComponent(rollNumber)}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token,
+                        Accept: 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rollNumber: Number(formData.rollNumber),
+                        name: formData.name.trim(),
+                        year: Number(formData.year),
+                        semester: Number(formData.semester),
+                        course: formData.course.trim(),
+                        totalMarks,
+                        maximumMarks
+                    })
+                }
+            )
 
             const text = await response.text()
             let data = null
@@ -184,11 +196,16 @@ function UpdateStudent() {
                 )
             }
 
+            if (typeof data === 'string') {
+                throw new Error('Unexpected response from backend. Please verify the update.')
+            }
+
             setMessage('Student updated successfully!')
 
             setTimeout(() => {
                 navigate('/students')
             }, 1000)
+
         } catch (error) {
             console.error('Update student error:', error)
             setError(error.message || 'Failed to update student.')
