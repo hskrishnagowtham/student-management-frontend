@@ -23,13 +23,16 @@ function Dashboard() {
             try {
                 // ADMIN DASHBOARD
                 if (isAdmin) {
-                    const response = await fetch("/students", {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: "application/json"
+                    const response = await fetch(
+                        "https://studentmanagementsystem-0xvp.onrender.com/students",
+                        {
+                            method: "GET",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                Accept: "application/json"
+                            }
                         }
-                    });
+                    );
 
                     const data = await response.json();
 
@@ -44,13 +47,16 @@ function Dashboard() {
 
                 // USER DASHBOARD
                 else {
-                    const response = await fetch("/students/my-profile", {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: "application/json"
+                    const response = await fetch(
+                        "https://studentmanagementsystem-0xvp.onrender.com/students/my-profile",
+                        {
+                            method: "GET",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                Accept: "application/json"
+                            }
                         }
-                    });
+                    );
 
                     const data = await response.json();
 
