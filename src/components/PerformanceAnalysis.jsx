@@ -1,54 +1,60 @@
 
-import { useState } from "react";
-import ReactMarkdown from "react-markdown";
+import React, { useState } from "react";
 
-import "./PerformanceAnalysis.css";
+const API_BASE_URL =
+    "https://studentmanagementsystem-0xvp.onrender.com";
 
 function PerformanceAnalysis() {
-    const [analysis, setAnalysis] = useState("");
+    const [report, setReport] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const analyzePerformance = async () => {
         setLoading(true);
-        setAnalysis("");
+        setError("");
+        setReport("");
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            setError("Your session may have expired. Please log in again.");
+            setLoading(false);
+            return;
+        }
 
         try {
-            const response = await fetch("/ai/performance", {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+            const response = await fetch(
+                `${API_BASE_URL}/ai/performance`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
                 }
-            });
+            );
 
-            const data = await response.text();
+            const responseText = await response.text();
 
             if (!response.ok) {
-                if (response.status === 429) {
-                    throw new Error(
-                        "Daily AI request limit reached. Please try again after the quota resets."
-                    );
-                }
-
-                if (response.status === 503) {
-                    throw new Error(
-                        "AI service is temporarily busy. Please try again later."
-                    );
-                }
-
-                throw new Error(data || "Unable to analyze performance.");
+                throw new Error(
+                    responseText || `Request failed: ${response.status}`
+                );
             }
 
-            setAnalysis(data);
-
-        } catch (error) {
-            setAnalysis(error.message);
+            setReport(responseText);
+        } catch (err) {
+            console.error("Performance Analysis Error:", err);
+            setError(
+                err.message || "Unable to analyze performance. Please try again."
+            );
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="performance-analysis">
+        <div style={styles.container}>
             <h2>AI Performance Analysis</h2>
 
             <p>
@@ -58,18 +64,73 @@ function PerformanceAnalysis() {
             <button
                 onClick={analyzePerformance}
                 disabled={loading}
+                style={styles.button}
             >
                 {loading ? "Analyzing..." : "Analyze My Performance"}
             </button>
 
-            {analysis && (
-                <div className="analysis-result">
-                    <h3>Performance Report</h3>
-                    <ReactMarkdown>{analysis}</ReactMarkdown>
-                </div>
-            )}
+            <div style={styles.reportContainer}>
+                <h3>Performance Report</h3>
+
+                {loading && <p>AI is analyzing your performance. Please wait...</p>}
+
+                {error && (
+                    <p style={styles.error}>
+                        {error}
+                    </p>
+                )}
+
+                {report && (
+                    <div style={styles.report}>
+                        {report}
+                    </div>
+                )}
+
+                {!loading && !error && !report && (
+                    <p>Your performance report will appear here.</p>
+                )}
+            </div>
         </div>
     );
 }
+
+const styles = {
+    container: {
+        maxWidth: "900px",
+        margin: "30px auto",
+        padding: "25px",
+        fontFamily: "Arial, sans-serif",
+    },
+
+    button: {
+        backgroundColor: "#2563eb",
+        color: "white",
+        padding: "12px 24px",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "16px",
+        marginTop: "15px",
+    },
+
+    reportContainer: {
+        marginTop: "30px",
+        padding: "20px",
+        backgroundColor: "#f8fafc",
+        borderRadius: "8px",
+        border: "1px solid #ddd",
+    },
+
+    report: {
+        whiteSpace: "pre-wrap",
+        lineHeight: "1.7",
+        color: "#222",
+    },
+
+    error: {
+        color: "red",
+        whiteSpace: "pre-wrap",
+    },
+};
 
 export default PerformanceAnalysis;
