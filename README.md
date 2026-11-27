@@ -1,16 +1,104 @@
-# React + Vite
+# Student Management System – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based frontend for a Student Management System with secure authentication, student management, academic performance analysis, and AI-powered learning features.
 
-Currently, two official plugins are available:
+## Live Application
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Frontend:** https://student-management-frontend-5nti.onrender.com/
 
-## React Compiler
+**Backend API:** https://studentmanagementsystem-0xvp.onrender.com/
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## About the Project
 
-## Expanding the ESLint configuration
+The Student Management System frontend provides an interactive interface for administrators and students to manage academic information.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+It communicates with a Spring Boot REST API and provides access to student records, dashboards, academic performance, and AI-powered learning tools.
+
+## Technologies Used
+
+- React
+- JavaScript
+- HTML5
+- CSS3
+- Vite
+- React Router
+- React Markdown
+- REST API Integration
+- Git and GitHub
+
+## Features
+
+### Authentication
+- User registration
+- User login
+- JWT-based authentication
+- Role-based access for Admin and Student users
+
+### Student Management
+- View student records
+- Add student details
+- Update student information
+- Delete student records
+- Search students
+
+### Dashboard
+- Student dashboard
+- Academic information
+- Student profile
+
+### AI-Powered Features
+- AI Student Assistant
+- Performance Analysis
+- Question Generator
+- Learning Recommendations
+
+## Backend Integration
+
+The frontend communicates with the Java Spring Boot backend through REST APIs.
+
+**Backend Repository:**  
+https://github.com/hskrishnagowtham/StudentManagementSystem
+
+## Deployment
+
+- Frontend: Render
+- Backend: Render
+- Database: Aiven MySQL
+
+## How to Run Locally
+
+1. Clone the frontend repository:
+
+   `git clone https://github.com/hskrishnagowtham/student-management-frontend.git`
+
+2. Open the project in IntelliJ IDEA or VS Code.
+
+3. Install dependencies:
+
+   `npm install`
+
+4. Configure the backend API URL if required.
+
+5. Start the development server:
+
+   `npm run dev`
+
+6. Open the local URL displayed in the terminal.
+
+## Build for Production
+
+Run:
+
+`npm run build`
+
+## GitHub Repository
+
+https://github.com/hskrishnagowtham/student-management-frontend
+
+## Author
+
+**Krishna Gowtham**
+
+B.Tech – Computer Science and Engineering
+
+Interested in Java Full Stack Development and Artificial Intelligence.
