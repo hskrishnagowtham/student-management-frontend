@@ -1,8 +1,10 @@
 
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
-
 import "./QuestionGenerator.css";
+
+const API_BASE_URL =
+    "https://studentmanagementsystem-0xvp.onrender.com";
 
 function QuestionGenerator() {
     const [topic, setTopic] = useState("");
@@ -21,26 +23,46 @@ function QuestionGenerator() {
         setQuestions("");
 
         try {
-            const response = await fetch("/ai/generate-questions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify({ topic: topic.trim() })
-            });
+            const token = localStorage.getItem("token");
 
-            if (!response.ok) {
-                const message = await response.text();
+            if (!token) {
                 throw new Error(
-                    message || "Failed to generate questions."
+                    "Your session may have expired. Please log in again."
                 );
             }
 
+            const response = await fetch(
+                `${API_BASE_URL}/ai/generate-questions`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        topic: topic.trim()
+                    })
+                }
+            );
+
             const data = await response.text();
+
+            if (!response.ok) {
+                throw new Error(
+                    data || "Failed to generate questions."
+                );
+            }
+
+            if (!data.trim()) {
+                throw new Error(
+                    "The AI returned an empty response. Please try again."
+                );
+            }
+
             setQuestions(data);
 
         } catch (err) {
+            console.error("Question Generator Error:", err);
             setError(err.message || "Something went wrong.");
         } finally {
             setLoading(false);
@@ -92,7 +114,9 @@ function QuestionGenerator() {
             )}
 
             {loading && (
-                <p>Please wait. AI is generating your questions...</p>
+                <p>
+                    Please wait. AI is generating your questions...
+                </p>
             )}
 
             {questions && (
