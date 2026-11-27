@@ -3,8 +3,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import "./QuestionGenerator.css";
 
-const API_BASE_URL =
-    "https://studentmanagementsystem-0xvp.onrender.com";
+const API_BASE_URL = "https://studentmanagementsystem-0xvp.onrender.com";
 
 function QuestionGenerator() {
     const [topic, setTopic] = useState("");
@@ -18,19 +17,18 @@ function QuestionGenerator() {
             return;
         }
 
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            setError("Your session may have expired. Please log in again.");
+            return;
+        }
+
         setLoading(true);
         setError("");
         setQuestions("");
 
         try {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                throw new Error(
-                    "Your session may have expired. Please log in again."
-                );
-            }
-
             const response = await fetch(
                 `${API_BASE_URL}/ai/generate-questions`,
                 {
@@ -49,21 +47,19 @@ function QuestionGenerator() {
 
             if (!response.ok) {
                 throw new Error(
-                    data || "Failed to generate questions."
+                    data || `Failed to generate questions. Status: ${response.status}`
                 );
             }
 
             if (!data.trim()) {
-                throw new Error(
-                    "The AI returned an empty response. Please try again."
-                );
+                throw new Error("AI returned an empty response. Please try again.");
             }
 
             setQuestions(data);
 
         } catch (err) {
             console.error("Question Generator Error:", err);
-            setError(err.message || "Something went wrong.");
+            setError(err.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -77,7 +73,6 @@ function QuestionGenerator() {
 
     return (
         <div className="question-generator">
-
             <h2>AI Question Generator</h2>
 
             <p>
@@ -108,27 +103,19 @@ function QuestionGenerator() {
             </button>
 
             {error && (
-                <p className="error-message">
-                    {error}
-                </p>
+                <p className="error-message">{error}</p>
             )}
 
             {loading && (
-                <p>
-                    Please wait. AI is generating your questions...
-                </p>
+                <p>Please wait. AI is generating your questions...</p>
             )}
 
             {questions && (
                 <div className="generated-questions">
                     <h3>Generated Questions</h3>
-
-                    <ReactMarkdown>
-                        {questions}
-                    </ReactMarkdown>
+                    <ReactMarkdown>{questions}</ReactMarkdown>
                 </div>
             )}
-
         </div>
     );
 }
